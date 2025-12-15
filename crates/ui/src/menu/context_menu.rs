@@ -172,7 +172,6 @@ impl<E: ParentElement + Styled + IntoElement + 'static> Element for ContextMenu<
                                     div()
                                         .w(window.bounds().size.width)
                                         .h(window.bounds().size.height)
-                                        .occlude()
                                         .child(
                                             anchored()
                                                 .position(position)
