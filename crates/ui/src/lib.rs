@@ -1,6 +1,7 @@
 use gpui::{App, SharedString};
 use std::ops::Deref;
 
+mod element_ext;
 mod event;
 mod geometry;
 mod global_state;
@@ -58,6 +59,7 @@ pub mod sidebar;
 pub mod skeleton;
 pub mod slider;
 pub mod spinner;
+pub mod stepper;
 pub mod switch;
 pub mod tab;
 pub mod table;
@@ -66,9 +68,9 @@ pub mod text;
 pub mod theme;
 pub mod tooltip;
 pub mod tree;
-pub use time::{calendar, date_picker};
 
 pub use crate::Disableable;
+pub use element_ext::ElementExt;
 pub use event::InteractiveElementExt;
 pub use geometry::*;
 pub use icon::*;
@@ -79,6 +81,7 @@ pub use inspector::*;
 pub use root::Root;
 pub use styled::*;
 pub use theme::*;
+pub use time::{calendar, date_picker};
 pub use title_bar::*;
 pub use virtual_list::{VirtualList, VirtualListScrollHandle, h_virtual_list, v_virtual_list};
 pub use window_border::{WindowBorder, window_border, window_paddings};
@@ -95,8 +98,8 @@ pub fn init(cx: &mut App) {
     #[cfg(any(feature = "inspector", debug_assertions))]
     inspector::init(cx);
     root::init(cx);
-    date_picker::init(cx);
     color_picker::init(cx);
+    date_picker::init(cx);
     dock::init(cx);
     sheet::init(cx);
     select::init(cx);

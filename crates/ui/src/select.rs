@@ -2,14 +2,14 @@ use gpui::{
     AnyElement, App, AppContext, Bounds, ClickEvent, Context, DismissEvent, Edges, ElementId,
     Entity, EventEmitter, FocusHandle, Focusable, InteractiveElement, IntoElement, KeyBinding,
     Length, ParentElement, Pixels, Render, RenderOnce, SharedString, StatefulInteractiveElement,
-    StyleRefinement, Styled, Subscription, Task, WeakEntity, Window, anchored, canvas, deferred,
-    div, prelude::FluentBuilder, px, rems,
+    StyleRefinement, Styled, Subscription, Task, WeakEntity, Window, anchored, deferred, div,
+    prelude::FluentBuilder, px, rems,
 };
 use rust_i18n::t;
 
 use crate::{
-    ActiveTheme, Disableable, Icon, IconName, IndexPath, Selectable, Sizable, Size, StyleSized,
-    StyledExt,
+    ActiveTheme, Disableable, ElementExt as _, Icon, IconName, IndexPath, Selectable, Sizable,
+    Size, StyleSized, StyledExt,
     actions::{Cancel, Confirm, SelectDown, SelectUp},
     h_flex,
     input::clear_button,
@@ -644,8 +644,8 @@ where
     }
 
     /// Focus the select input.
-    pub fn focus(&self, window: &mut Window, _: &mut App) {
-        self.focus_handle.focus(window);
+    pub fn focus(&self, window: &mut Window, cx: &mut App) {
+        self.focus_handle.focus(window, cx);
     }
 
     fn update_selected_value(&mut self, _: &Window, cx: &App) {
@@ -679,7 +679,7 @@ where
             self.open = true;
         }
 
-        self.list.focus_handle(cx).focus(window);
+        self.list.focus_handle(cx).focus(window, cx);
         cx.propagate();
     }
 
@@ -688,7 +688,7 @@ where
             self.open = true;
         }
 
-        self.list.focus_handle(cx).focus(window);
+        self.list.focus_handle(cx).focus(window, cx);
         cx.propagate();
     }
 
@@ -701,7 +701,7 @@ where
             cx.notify();
         }
 
-        self.list.focus_handle(cx).focus(window);
+        self.list.focus_handle(cx).focus(window, cx);
     }
 
     fn toggle_menu(&mut self, _: &ClickEvent, window: &mut Window, cx: &mut Context<Self>) {
@@ -709,7 +709,7 @@ where
 
         self.open = !self.open;
         if self.open {
-            self.list.focus_handle(cx).focus(window);
+            self.list.focus_handle(cx).focus(window, cx);
         }
         cx.notify();
     }
@@ -862,17 +862,10 @@ where
                                 }))
                             }),
                     )
-                    .child(
-                        canvas(
-                            {
-                                let state = cx.entity();
-                                move |bounds, _, cx| state.update(cx, |r, _| r.bounds = bounds)
-                            },
-                            |_, _, _, _| {},
-                        )
-                        .absolute()
-                        .size_full(),
-                    ),
+                    .on_prepaint({
+                        let state = cx.entity();
+                        move |bounds, _, cx| state.update(cx, |r, _| r.bounds = bounds)
+                    }),
             )
             .when(self.open, |this| {
                 this.child(

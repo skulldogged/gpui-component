@@ -132,7 +132,8 @@ impl Dialog {
             button_props: DialogButtonProps::default(),
             close_button: true,
             overlay_closable: true,
-            overlay_top: Some(TITLE_BAR_HEIGHT),
+            // Cover the title bar bottom border.
+            overlay_top: Some(TITLE_BAR_HEIGHT - px(1.)),
         }
     }
 
@@ -304,6 +305,7 @@ impl RenderOnce for Dialog {
         let on_close = self.on_close.clone();
         let on_ok = self.on_ok.clone();
         let on_cancel = self.on_cancel.clone();
+        let has_title = self.title.is_some();
 
         let render_ok: RenderButtonFn = Box::new({
             let on_ok = on_ok.clone();
@@ -393,6 +395,11 @@ impl RenderOnce for Dialog {
         }
         if let Some(pb) = self.style.padding.bottom {
             paddings.bottom = pb.to_pixels(base_size, rem_size);
+        }
+
+        if !has_title {
+            // When no title, reduce the top padding to fix line-height effect.
+            paddings.top -= px(6.);
         }
 
         let animation = Animation::new(Duration::from_secs_f64(0.25))

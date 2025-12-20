@@ -2,11 +2,11 @@ use gpui::{
     AnyElement, App, Bounds, Context, Corner, DismissEvent, ElementId, EventEmitter, FocusHandle,
     Focusable, InteractiveElement as _, IntoElement, KeyBinding, MouseButton, ParentElement,
     Pixels, Point, Render, RenderOnce, StyleRefinement, Styled, Subscription, Window, anchored,
-    canvas, deferred, div, prelude::FluentBuilder as _, px,
+    deferred, div, prelude::FluentBuilder as _, px,
 };
 use std::rc::Rc;
 
-use crate::{Selectable, StyledExt as _, actions::Cancel, v_flex};
+use crate::{ElementExt, Selectable, StyledExt as _, actions::Cancel, v_flex};
 
 const CONTEXT: &str = "Popover";
 pub(crate) fn init(cx: &mut App) {
@@ -240,7 +240,7 @@ impl PopoverState {
             } else {
                 self.focus_handle.clone()
             };
-            focus_handle.focus(window);
+            focus_handle.focus(window, cx);
 
             self._dismiss_subscription =
                 Some(
@@ -312,9 +312,10 @@ impl RenderOnce for Popover {
         let el = div()
             .id(self.id)
             .child((trigger)(open, window, cx))
-            .on_mouse_down(self.mouse_button, {
+            .on_mouse_up(self.mouse_button, {
                 let state = state.clone();
                 move |_, window, cx| {
+                    cx.stop_propagation();
                     state.update(cx, |state, cx| {
                         // We force set open to false to toggle it correctly.
                         // Because if the mouse down out will toggle open first.
@@ -324,21 +325,14 @@ impl RenderOnce for Popover {
                     cx.notify(parent_view_id);
                 }
             })
-            .child(
-                canvas(
-                    {
-                        let state = state.clone();
-                        move |bounds, _, cx| {
-                            state.update(cx, |state, _| {
-                                state.trigger_bounds = Some(bounds);
-                            })
-                        }
-                    },
-                    |_, _, _, _| {},
-                )
-                .absolute()
-                .size_full(),
-            );
+            .on_prepaint({
+                let state = state.clone();
+                move |bounds, _, cx| {
+                    state.update(cx, |state, _| {
+                        state.trigger_bounds = Some(bounds);
+                    })
+                }
+            });
 
         if !open {
             return el;
@@ -373,7 +367,7 @@ impl RenderOnce for Popover {
                             })
                             .children(self.children)
                             .when(self.overlay_closable, |this| {
-                                this.on_mouse_down_out({
+                                this.on_mouse_up_out(MouseButton::Left, {
                                     let state = state.clone();
                                     move |_, window, cx| {
                                         state.update(cx, |state, cx| {
