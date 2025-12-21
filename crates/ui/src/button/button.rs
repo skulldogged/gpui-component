@@ -1,14 +1,14 @@
 use std::rc::Rc;
 
 use crate::{
-    ActiveTheme, Colorize as _, Disableable, FocusableExt as _, Icon, IconName, Selectable,
-    Sizable, Size, StyleSized, StyledExt, h_flex, spinner::Spinner, tooltip::Tooltip,
+    h_flex, spinner::Spinner, tooltip::Tooltip, ActiveTheme, Colorize as _, Disableable,
+    FocusableExt as _, Icon, IconName, Selectable, Sizable, Size, StyleSized, StyledExt,
 };
 use gpui::{
-    Action, AnyElement, App, ClickEvent, Corners, Div, Edges, ElementId, Hsla, InteractiveElement,
-    Interactivity, IntoElement, MouseButton, ParentElement, Pixels, RenderOnce, SharedString,
-    Stateful, StatefulInteractiveElement as _, StyleRefinement, Styled, Window, div,
-    prelude::FluentBuilder as _, px, relative,
+    div, prelude::FluentBuilder as _, px, relative, Action, AnyElement, App, ClickEvent, Corners,
+    Div, Edges, ElementId, Hsla, InteractiveElement, Interactivity, IntoElement, MouseButton,
+    ParentElement, Pixels, RenderOnce, SharedString, Stateful, StatefulInteractiveElement as _,
+    StyleRefinement, Styled, Window,
 };
 
 #[derive(Default, Clone, Copy)]
@@ -515,7 +515,7 @@ impl RenderOnce for Button {
                         let hover_style = style.hovered(self.outline, cx);
                         this.bg(hover_style.bg)
                             .border_color(hover_style.border)
-                            .text_color(crate::red_400())
+                            .text_color(hover_style.fg)
                     })
                     .active(|this| {
                         let active_style = style.active(self.outline, cx);
